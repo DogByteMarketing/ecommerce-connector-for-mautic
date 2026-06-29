@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MauticPlugin\EcommerceConnectorBundle\EventSubscriber;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Mautic\PluginBundle\Bundle\PluginDatabase;
+use Mautic\PluginBundle\Event\PluginInstallEvent;
+use Mautic\PluginBundle\Event\PluginUpdateEvent;
+use Mautic\PluginBundle\PluginEvents;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+class PluginSubscriber implements EventSubscriberInterface
+{
+    public function __construct(private EntityManagerInterface $entityManager, private PluginDatabase $pluginDatabase)
+    {
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            PluginEvents::ON_PLUGIN_INSTALL => ['onInstall', 100],
+            PluginEvents::ON_PLUGIN_UPDATE  => ['onUpdate', 100],
+        ];
+    }
+
+    public function onInstall(PluginInstallEvent $event): void
+    {
+        $eventMetadata = $event->getMetadata();
+
+        if (null === $eventMetadata) {
+            $metadata = self::getMetadata($this->entityManager);
+        } else {
+            $metadata = [];
+            foreach ($eventMetadata as $class => $classMetadata) {
+                if (!str_contains($classMetadata->namespace, 'MauticPlugin\\EcommerceConnectorBundle')) {
+                    continue;
+                }
+
+                $metadata[$class] = $classMetadata;
+            }
+        }
+
+        if (count($metadata) > 0) {
+            $this->pluginDatabase->installPluginSchema(
+                $metadata,
+                $event->getInstalledSchema()
+            );
+        }
+    }
+
+    public function onUpdate(PluginUpdateEvent $event): void
+    {
+        $metadata = self::getMetadata($this->entityManager);
+
+        if (count($metadata) > 0) {
+            $this->pluginDatabase->installPluginSchema(
+                $metadata
+            );
+        }
+    }
+
+    /**
+     * @return array<class-string, ClassMetadata>
+     */
+    private static function getMetadata(EntityManagerInterface $em): array
+    {
+        $allMetadata   = $em->getMetadataFactory()->getAllMetadata();
+        $currentSchema = $em->getConnection()->createSchemaManager()->introspectSchema();
+
+        $classes = [];
+
+        /** @var ClassMetadata $meta */
+        foreach ($allMetadata as $meta) {
+            if (!str_contains($meta->namespace, 'MauticPlugin\\EcommerceConnectorBundle')) {
+                continue;
+            }
+
+            $table = $meta->getTableName();
+
+            if ($currentSchema->hasTable($table)) {
+                continue;
+            }
+
+            $classes[$meta->namespace] = $meta;
+        }
+
+        return $classes;
+    }
+}
