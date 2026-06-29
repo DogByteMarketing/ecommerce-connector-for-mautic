@@ -19,7 +19,7 @@ class EcommerceOrder
 
     private string $orderId;
 
-    private float $orderTotal;
+    private string $orderTotal;
 
     private ?string $orderCurrency = null;
 
@@ -36,6 +36,7 @@ class EcommerceOrder
             ->addIndex(['email_id'], 'ecommerce_email_id')
             ->addIndex(['lead_id'], 'ecommerce_lead_id')
             ->addIndex(['order_id'], 'ecommerce_order_id')
+            ->addIndex(['date_added'], 'ecommerce_date_added')
             ->addUniqueConstraint(['order_id', 'order_source'], 'ecommerce_order_source_unique');
 
         $builder->addId();
@@ -49,7 +50,11 @@ class EcommerceOrder
             ->build();
 
         $builder->addNamedField('orderId', 'string', 'order_id');
-        $builder->addNamedField('orderTotal', 'float', 'order_total');
+        $builder->addField('orderTotal', 'decimal', [
+            'columnName' => 'order_total',
+            'precision'  => 19,
+            'scale'      => 4,
+        ]);
         $builder->addNamedField('orderCurrency', 'string', 'order_currency', true);
         $builder->addNamedField('orderSource', 'string', 'order_source');
         $builder->addNamedField('dateAdded', 'datetime', 'date_added');
@@ -90,12 +95,12 @@ class EcommerceOrder
         $this->orderId = $orderId;
     }
 
-    public function getOrderTotal(): float
+    public function getOrderTotal(): string
     {
         return $this->orderTotal;
     }
 
-    public function setOrderTotal(float $orderTotal): void
+    public function setOrderTotal(string $orderTotal): void
     {
         $this->orderTotal = $orderTotal;
     }

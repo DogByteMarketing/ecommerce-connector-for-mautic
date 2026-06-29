@@ -6,19 +6,24 @@ namespace MauticPlugin\EcommerceConnectorBundle\EventSubscriber;
 
 use Mautic\CoreBundle\CoreEvents;
 use Mautic\CoreBundle\Event\CustomContentEvent;
+use Mautic\CoreBundle\Translation\Translator;
 use Mautic\EmailBundle\Entity\Email;
 use MauticPlugin\EcommerceConnectorBundle\Entity\EcommerceOrderRepository;
+use MauticPlugin\EcommerceConnectorBundle\Integration\Config;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EmailStatsSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var array<int, float>
+     * @var array<int, array<string, string>>
      */
     private array $revenueCache = [];
 
-    public function __construct(private EcommerceOrderRepository $orderRepository)
-    {
+    public function __construct(
+        private EcommerceOrderRepository $orderRepository,
+        private Config $config,
+        private Translator $translator,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -30,29 +35,58 @@ class EmailStatsSubscriber implements EventSubscriberInterface
 
     public function onViewInjectCustomContent(CustomContentEvent $event): void
     {
-        if ('email.stats' !== $event->getContext()) {
+        if (!$this->config->isPublished()) {
+            return;
+        }
+
+        if (!in_array($event->getContext(), ['email.stats', 'details.stats.graph.below'], true)) {
             return;
         }
 
         $vars  = $event->getVars();
-        $email = $vars['item'] ?? null;
+        $email = $vars['item'] ?? $vars['entity'] ?? null;
 
         if (!$email instanceof Email || !$email->getId()) {
             return;
         }
 
-        $emailId = (int) $email->getId();
+        $event->addContent($this->buildRevenueContent((int) $email->getId()));
+    }
+
+    private function buildRevenueContent(int $emailId): string
+    {
         if (!array_key_exists($emailId, $this->revenueCache)) {
-            $this->revenueCache[$emailId] = $this->orderRepository->getRevenueForEmail($emailId);
+            $this->revenueCache[$emailId] = $this->orderRepository->getRevenueGroupedByCurrencyForEmail($emailId);
         }
 
-        $revenue = number_format($this->revenueCache[$emailId], 2, '.', '');
+        $revenueByCurrency = $this->revenueCache[$emailId];
+        if ([] === $revenueByCurrency) {
+            $revenueByCurrency = [
+                $this->config->getDefaultCurrency() => '0.00',
+            ];
+        }
 
-        $content = '
-            <span class="mt-xs label label-green">
-                <i class="ri-money-dollar-circle-line"></i><span title="Revenue">'.$revenue.'</span>
-            </span>';
+        $labels = [];
+        foreach ($revenueByCurrency as $currency => $amount) {
+            $labels[] = sprintf(
+                '<span class="mt-xs label label-green"><i class="ri-money-dollar-circle-line"></i><span title="%s">%s</span></span>',
+                $this->translator->trans('mautic.plugin.ecommerce.revenue'),
+                $this->formatRevenueAmount($currency, $amount),
+            );
+        }
 
-        $event->addContent($content);
+        return implode('', $labels);
+    }
+
+    private function formatRevenueAmount(string $currencyCode, string $amount): string
+    {
+        $formatter = new \NumberFormatter('en_US', \NumberFormatter::CURRENCY);
+        $formatted = $formatter->formatCurrency((float) $amount, strtoupper($currencyCode));
+
+        if (false !== $formatted) {
+            return $formatted;
+        }
+
+        return number_format((float) $amount, 2, '.', '');
     }
 }

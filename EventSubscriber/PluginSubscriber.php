@@ -56,9 +56,7 @@ class PluginSubscriber implements EventSubscriberInterface
         $metadata = self::getMetadata($this->entityManager);
 
         if (count($metadata) > 0) {
-            $this->pluginDatabase->installPluginSchema(
-                $metadata
-            );
+            $this->pluginDatabase->installPluginSchema($metadata);
         }
     }
 

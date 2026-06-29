@@ -1,0 +1,4 @@
+{% set noticeVariant = variant|default('info') %}
+<div class="ecommerce-notice ecommerce-notice--{{ noticeVariant }}">
+    {% block content %}{% endblock %}
+</div>

@@ -1,0 +1,117 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MauticPlugin\EcommerceConnectorBundle\Integration;
+
+use Mautic\PluginBundle\Helper\IntegrationHelper;
+
+class Config
+{
+    public const DEFAULT_CURRENCY     = 'USD';
+    public const DEFAULT_MAX_TOTAL    = 1000000.0;
+    public const DEFAULT_ORDER_SOURCE = 'web';
+
+    public function __construct(
+        private IntegrationHelper $integrationHelper,
+    ) {
+    }
+
+    public function isPublished(): bool
+    {
+        $integration = $this->getIntegrationObject();
+
+        return null !== $integration && $integration->getIntegrationSettings()->getIsPublished();
+    }
+
+    public function getWebhookSecret(): ?string
+    {
+        $integration = $this->getIntegrationObject();
+        if (null === $integration) {
+            return null;
+        }
+
+        $keys = $integration->getKeys();
+        $secret = isset($keys['webhook_secret']) ? trim((string) $keys['webhook_secret']) : '';
+
+        return '' !== $secret ? $secret : null;
+    }
+
+    public function isPageHitTrackingEnabled(): bool
+    {
+        return $this->getFeatureSetting('enable_page_hit_tracking', true);
+    }
+
+    public function isAttributeLastEmailEnabled(): bool
+    {
+        return $this->getFeatureSetting('attribute_last_email', false);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedOrderSources(): array
+    {
+        $integration = $this->getIntegrationObject();
+        if (null === $integration) {
+            return [];
+        }
+
+        $raw = $integration->getIntegrationSettings()->getFeatureSettings()['allowed_order_sources'] ?? '';
+        if (!is_string($raw) || '' === trim($raw)) {
+            return [];
+        }
+
+        $sources = array_map(trim(...), explode(',', $raw));
+
+        return array_values(array_filter($sources, static fn (string $source): bool => '' !== $source));
+    }
+
+    public function getDefaultCurrency(): string
+    {
+        $integration = $this->getIntegrationObject();
+        if (null === $integration) {
+            return self::DEFAULT_CURRENCY;
+        }
+
+        $currency = $integration->getIntegrationSettings()->getFeatureSettings()['default_currency'] ?? self::DEFAULT_CURRENCY;
+        $currency = strtoupper(trim((string) $currency));
+
+        return 3 === strlen($currency) ? $currency : self::DEFAULT_CURRENCY;
+    }
+
+    public function getMaxOrderTotal(): float
+    {
+        $integration = $this->getIntegrationObject();
+        if (null === $integration) {
+            return self::DEFAULT_MAX_TOTAL;
+        }
+
+        $max = $integration->getIntegrationSettings()->getFeatureSettings()['max_order_total'] ?? self::DEFAULT_MAX_TOTAL;
+
+        return is_numeric($max) ? (float) $max : self::DEFAULT_MAX_TOTAL;
+    }
+
+    private function getFeatureSetting(string $key, bool $default): bool
+    {
+        $integration = $this->getIntegrationObject();
+        if (null === $integration) {
+            return $default;
+        }
+
+        $settings = $integration->getIntegrationSettings()->getFeatureSettings();
+
+        if (!array_key_exists($key, $settings)) {
+            return $default;
+        }
+
+        return (bool) $settings[$key];
+    }
+
+    private function getIntegrationObject(): ?EcommerceConnectorIntegration
+    {
+        $integration = $this->integrationHelper->getIntegrationObject(EcommerceConnectorIntegration::NAME);
+
+        return $integration instanceof EcommerceConnectorIntegration ? $integration : null;
+    }
+}

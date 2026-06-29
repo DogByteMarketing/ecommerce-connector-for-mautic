@@ -1,0 +1,94 @@
+{{ include('@EcommerceConnector/Integration/_notice_styles.html.twig') }}
+
+{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'success' } %}
+    {% block content %}
+        <p>
+            {{ 'mautic.plugin.ecommerce.install.wordpress_intro'|trans({
+                '%link%': '<a href="https://wordpress.org/plugins/sync-mautic/" target="_blank" rel="noopener noreferrer">Sync Mautic</a>',
+            })|raw }}
+        </p>
+        <p>{{ 'mautic.plugin.ecommerce.install.wordpress_details'|trans|purify }}</p>
+    {% endblock %}
+{% endembed %}
+
+<h4 class="mt-md mb-sm">{{ 'mautic.plugin.ecommerce.install.custom_heading'|trans }}</h4>
+<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.custom_intro'|trans|purify }}</p>
+
+{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'success' } %}
+    {% block content %}
+        <p>{{ 'mautic.plugin.ecommerce.install.cta_intro'|trans }}</p>
+        <p>
+            {{ 'mautic.plugin.ecommerce.install.cta_phone'|trans({
+                '%phone%': '<a href="tel:+14237248922">423 724 8922</a>',
+            })|raw }}
+        </p>
+    {% endblock %}
+{% endembed %}
+
+<ol class="ecommerce-install-steps pl-md mb-md mt-md">
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step1_title'|trans }}</h5>
+        <p class="mb-0">{{ 'mautic.plugin.ecommerce.install.step1_body'|trans|purify }}</p>
+    </li>
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step2_title'|trans }}</h5>
+        <p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.step2_body'|trans|purify }}</p>
+        {% if webhookUrl is not empty %}
+            {{ include('@MauticCore/Components/code-snippet.html.twig', {
+                variant: 'single',
+                innerText: webhookUrl,
+                className: 'layer-two',
+            }) }}
+        {% endif %}
+    </li>
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step3_title'|trans }}</h5>
+        <p class="mb-0">{{ 'mautic.plugin.ecommerce.install.step3_body'|trans|purify }}</p>
+    </li>
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step4_title'|trans }}</h5>
+        <p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.step4_body'|trans|purify }}</p>
+        {{ include('@MauticCore/Components/code-snippet.html.twig', {
+            variant: 'multi',
+            innerText: 'order_id=12345
+order_total=99.99
+order_source=woocommerce
+order_currency=USD',
+        }) }}
+    </li>
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step5_title'|trans }}</h5>
+        <p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.step5_body'|trans|purify }}</p>
+        {{ include('@MauticCore/Components/code-snippet.html.twig', {
+            variant: 'multi',
+            innerText: '$params = [
+    \'order_id\'       => \'12345\',
+    \'order_total\'    => \'99.99\',
+    \'order_source\'   => \'woocommerce\',
+    \'order_currency\' => \'USD\',
+];
+ksort($params);
+$payload   = http_build_query($params);
+$signature = hash_hmac(\'sha256\', $payload, \'YOUR_WEBHOOK_SECRET\');',
+        }) }}
+    </li>
+    <li>
+        <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.step6_title'|trans }}</h5>
+        <p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.step6_body'|trans|purify }}</p>
+        {{ include('@MauticCore/Components/code-snippet.html.twig', {
+            variant: 'multi',
+            innerText: 'curl -X POST "' ~ webhookUrl|default('https://your-mautic-site.com/mtc/ecommerce') ~ '" \\
+  -H "X-Mautic-Ecommerce-Signature: YOUR_SIGNATURE" \\
+  -d "order_id=12345" \\
+  -d "order_total=99.99" \\
+  -d "order_source=woocommerce" \\
+  -d "order_currency=USD"',
+        }) }}
+    </li>
+</ol>
+
+{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'warning' } %}
+    {% block content %}
+        <p class="mb-0">{{ 'mautic.plugin.ecommerce.install.security_note'|trans|purify }}</p>
+    {% endblock %}
+{% endembed %}

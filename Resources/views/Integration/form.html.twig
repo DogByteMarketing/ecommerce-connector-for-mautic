@@ -1,0 +1,17 @@
+{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'info' } %}
+    {% block content %}
+        <p><strong>{{ 'mautic.plugin.ecommerce.webhook_url'|trans }}</strong></p>
+        {{ include('@MauticCore/Components/code-snippet.html.twig', {
+            variant: 'single',
+            innerText: webhookUrl,
+            className: 'layer-two',
+        }) }}
+        <p>{{ 'mautic.plugin.ecommerce.webhook_instructions'|trans }}</p>
+    {% endblock %}
+{% endembed %}
+
+{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'warning' } %}
+    {% block content %}
+        <p>{{ 'mautic.plugin.ecommerce.gdpr_warning'|trans|purify }}</p>
+    {% endblock %}
+{% endembed %}

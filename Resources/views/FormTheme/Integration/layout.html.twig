@@ -1,0 +1,7 @@
+{% extends '@MauticPlugin/FormTheme/Integration/layout.html.twig' %}
+
+{% block _integration_details_isPublished_row %}
+    {{ include('@EcommerceConnector/Integration/_notice_styles.html.twig') }}
+    {{ include('@EcommerceConnector/Integration/cta.html.twig') }}
+    {{ block('button_group_row') }}
+{% endblock %}
