@@ -140,7 +140,7 @@ class PublicControllerTest extends MauticMysqlTestCase
             $plugin = new \Mautic\PluginBundle\Entity\Plugin();
             $plugin->setName('Ecommerce Connector');
             $plugin->setBundle('EcommerceConnectorBundle');
-            $plugin->setVersion('1.1.0');
+            $plugin->setVersion('1.1.1');
         $this->em->persist($plugin);
         $this->em->flush();
         static::getContainer()->get('cache.app')->clear();

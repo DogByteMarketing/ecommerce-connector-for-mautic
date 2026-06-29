@@ -153,6 +153,11 @@ ddev exec php bin/phpunit -c app/phpunit.xml.dist plugins/EcommerceConnectorBund
 
 ## Changelog
 
+### 1.1.1
+```
+- Bugfix: composer.json
+```
+
 ### 1.1.0
 
 ```
