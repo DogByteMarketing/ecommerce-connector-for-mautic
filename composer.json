@@ -1,5 +1,5 @@
 {
-    "name": "dogbytemarketing/ecommerce-connector",
+    "name": "dogbytemarketing/ecommerce-connector-for-mautic",
     "description": "eCommerce Connector",
     "type": "mautic-plugin",
     "license": "GPL-3.0-or-later",
