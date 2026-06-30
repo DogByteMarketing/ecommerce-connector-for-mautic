@@ -29,11 +29,13 @@ Segment contacts by ecommerce activity and commerce field values (order count, l
 
 ## Installation
 
-### 1. Add the plugin files
+### 1. Take a backup
+
+### 2. Add the plugin files
 
 Copy the `EcommerceConnectorBundle` folder into your Mautic `plugins/` directory.
 
-### 2. Install or upgrade the plugin (Settings → Plugins)
+### 3. Install or upgrade the plugin (Settings → Plugins)
 
 1. Log in to Mautic as an administrator.
 2. Open **Settings** (gear icon) → **Plugins**.
@@ -43,7 +45,7 @@ Copy the `EcommerceConnectorBundle` folder into your Mautic `plugins/` directory
 
 You should see **Ecommerce Connector** appear in the plugin grid after installation.
 
-### 3. Configure the integration (three settings tabs)
+### 4. Configure the integration (three settings tabs)
 
 Click the **Ecommerce Connector** plugin tile to open the integration settings modal. Configuration is split across three tabs.
 
@@ -84,7 +86,7 @@ Step-by-step setup instructions for connecting your store:
 - **Custom stores:** signed webhook integration guide with example PHP and cURL requests
 - Contact information if you need a custom integration built for you
 
-### 4. Connect your store
+### 5. Connect your store
 
 Configure your eCommerce platform to send signed `POST` requests to the webhook URL from step 3. See [Webhook tracking](#webhook-tracking) below for payload and signing details.
 
