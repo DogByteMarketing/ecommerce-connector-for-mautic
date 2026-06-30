@@ -1,0 +1,115 @@
+<div class="tab-pane fade bdr-w-0" id="ecommerce-container">
+    <div class="row mb-md">
+        <div class="col-sm-6 col-md-3">
+            <div class="panel panel-default mb-0">
+                <div class="panel-body text-center">
+                    <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.field.lifetime_value'|trans }}</h5>
+                    <p class="text-secondary mb-0">{{ lifetimeValueFormatted|purify }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="panel panel-default mb-0">
+                <div class="panel-body text-center">
+                    <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.field.order_count'|trans }}</h5>
+                    <p class="text-secondary mb-0">{{ stats.order_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="panel panel-default mb-0">
+                <div class="panel-body text-center">
+                    <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.field.last_order_date'|trans }}</h5>
+                    <p class="text-secondary mb-0">
+                        {% if stats.last_order_date %}
+                            {{ dateToText(stats.last_order_date, 'UTC', 'Y-m-d H:i:s', true) }}
+                        {% else %}
+                            {{ 'mautic.core.no.info'|trans }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="panel panel-default mb-0">
+                <div class="panel-body text-center">
+                    <h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.field.last_order_total'|trans }}</h5>
+                    <p class="text-secondary mb-0">
+                        {% if lastOrderTotalFormatted %}
+                            {{ lastOrderTotalFormatted|purify }}
+                        {% else %}
+                            {{ 'mautic.core.no.info'|trans }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if orders is empty %}
+        {{ include('@MauticCore/Helper/no_information.html.twig', {'tip': 'mautic.plugin.ecommerce.tab.no_orders'}) }}
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th class="timeline-icon np"></th>
+                    {{ include('@MauticCore/Helper/tableheader.html.twig', {
+                        'text': 'mautic.plugin.ecommerce.tab.email',
+                        'class': 'visible-md visible-lg',
+                    }) }}
+                    {{ include('@MauticCore/Helper/tableheader.html.twig', {
+                        'text': 'mautic.plugin.ecommerce.tab.order_total',
+                        'class': 'visible-md visible-lg',
+                    }) }}
+                    {{ include('@MauticCore/Helper/tableheader.html.twig', {
+                        'text': 'mautic.plugin.ecommerce.tab.order_number',
+                        'class': 'visible-md visible-lg',
+                    }) }}
+                    {{ include('@MauticCore/Helper/tableheader.html.twig', {
+                        'text': 'mautic.plugin.ecommerce.tab.source',
+                        'class': 'visible-md visible-lg timeline-type',
+                    }) }}
+                    {{ include('@MauticCore/Helper/tableheader.html.twig', {
+                        'text': 'mautic.plugin.ecommerce.tab.date',
+                        'class': 'visible-md visible-lg timeline-timestamp',
+                    }) }}
+                </tr>
+                </thead>
+                <tbody>
+                {% set lastDate = null %}
+                {% for order in orders %}
+                    {% set eventDate = dateToDate(order.dateAdded, 'local', 'Y-m-d H:i:s') %}
+                    {% if lastDate != eventDate %}
+                        {% set dateLabel = dateToTextShort(order.dateAdded, 'local', 'Y-m-d H:i:s') %}
+                        <tr class="timeline-date-header">
+                            <td colspan="6" class="text-center">
+                                <span size="md" class="label label-warm-gray" style="font-weight: normal; font-size:13px;">
+                                    <i class="ri-time-line"></i>{{ dateLabel }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% set lastDate = eventDate %}
+                    {% endif %}
+                    <tr class="timeline-row {% if loop.index is divisible by(2) %}timeline-row-highlighted{% endif %}">
+                        <td class="timeline-icon np">
+                            <span class="fa ri-fw ri-shopping-cart-2-line"></span>
+                        </td>
+                        <td class="visible-md visible-lg">
+                            {% if order.emailLink %}
+                                <a href="{{ order.emailLink }}" data-toggle="ajax">{{ order.emailName|default(order.emailId)|purify }}</a>
+                            {% else %}
+                                {{ 'mautic.core.no.info'|trans }}
+                            {% endif %}
+                        </td>
+                        <td class="visible-md visible-lg">{{ order.orderTotalFormatted|purify }}</td>
+                        <td class="visible-md visible-lg">{{ order.orderId|purify }}</td>
+                        <td class="timeline-type visible-md visible-lg">{{ order.orderSource|purify }}</td>
+                        <td class="timeline-timestamp visible-md visible-lg">{{ dateToText(order.dateAdded, 'local', 'Y-m-d H:i:s', true) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,13 @@
+{{ include('@EcommerceConnector/Integration/_notice_styles.html.twig') }}
+{% import '@EcommerceConnector/Integration/_contact_macros.html.twig' as contact %}
+
+<h2 class="mb-sm">{{ 'mautic.plugin.ecommerce.support.heading'|trans }}</h2>
+<p class="mb-xs">{{ 'mautic.plugin.ecommerce.support.intro_question'|trans|purify }}</p>
+<p class="mb-md">{{ 'mautic.plugin.ecommerce.support.intro_contact'|trans|purify }}</p>
+
+<dl class="mb-0">
+    <dt class="fw-sb">{{ 'mautic.plugin.ecommerce.support.phone'|trans }}</dt>
+    <dd class="mb-sm">{{ contact.phoneLink()|raw }}</dd>
+    <dt class="fw-sb">{{ 'mautic.plugin.ecommerce.support.email'|trans }}</dt>
+    <dd class="mb-0">{{ contact.emailLink()|raw }}</dd>
+</dl>

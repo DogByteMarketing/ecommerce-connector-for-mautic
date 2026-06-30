@@ -1,9 +1,12 @@
+{% import '@EcommerceConnector/Integration/_contact_macros.html.twig' as contact %}
+{% set supportPhoneLink = contact.phoneLink() %}
+
 {% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'success' } %}
     {% block content %}
         <p>{{ 'mautic.plugin.ecommerce.help_cta_intro'|trans }}</p>
-        <p>
+        <p class="mb-0">
             {{ 'mautic.plugin.ecommerce.help_cta_phone'|trans({
-                '%phone%': '<a href="tel:+14237248922">423 724 8922</a>',
+                '%phone%': supportPhoneLink,
             })|raw }}
         </p>
     {% endblock %}

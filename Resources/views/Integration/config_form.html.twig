@@ -1,5 +1,5 @@
 {#
-  Ecommerce Connector integration form (extends core layout with an Installation tab).
+  Ecommerce Connector integration form (extends core layout with Installation and Webhook tabs).
 #}
 {%- form_theme form with formThemes -%}
 {%- set nSupportedFeatures = form.supportedFeatures is defined ? form.supportedFeatures|length : 0 -%}
@@ -28,6 +28,12 @@
 {%- if form.featureSettings.leadFields is defined %}{% do form.featureSettings.leadFields.setRendered() %}{% endif -%}
 {%- if form.featureSettings.companyFields is defined %}{% do form.featureSettings.companyFields.setRendered() %}{% endif -%}
 {%- set webhookUrl = (formNotes.custom.parameters|default({})).webhookUrl|default('') -%}
+{%- set hasGeneralFeatureErrors = form.featureSettings is defined and (
+    (form.featureSettings.enable_page_hit_tracking is defined and formContainsErrors(form.featureSettings.enable_page_hit_tracking))
+    or (form.featureSettings.attribute_last_email is defined and formContainsErrors(form.featureSettings.attribute_last_email))
+) -%}
+{%- set hasWebhookErrors = form.apiKeys is defined and formContainsErrors(form.apiKeys) -%}
+{%- set hasFormattingErrors = form.featureSettings is defined and form.featureSettings.default_currency is defined and formContainsErrors(form.featureSettings.default_currency) -%}
 
 {%- if description is not empty -%}
     <div class="alert alert-info">
@@ -37,22 +43,49 @@
 
 <ul class="nav nav-tabs nav-tabs-line">
     <li class="{% if 'details-container' == activeTab %}active{% endif %}" id="details-tab">
-        <a href="#details-container" role="tab" data-toggle="tab">{{ 'mautic.plugin.integration.tab.details'|trans }}</a>
+        <a href="#details-container" role="tab" data-toggle="tab">
+            {{- 'mautic.plugin.ecommerce.tab.general'|trans -}}
+            {%- if hasGeneralFeatureErrors -%}
+                <i class="ri-fw ri-alert-fill text-danger"></i>
+            {%- endif -%}
+        </a>
     </li>
 
     {%- if hasSupportedFeatures or hasFeatureSettings -%}
         <li class="" id="features-tab">
             <a href="#features-container" role="tab" data-toggle="tab">
-                {{- 'mautic.plugin.integration.tab.features'|trans -}}
-                {%- if (hasSupportedFeatures and formContainsErrors(form.supportedFeatures)) or (hasFeatureSettings and formContainsErrors(form.featureSettings, ['leadFields'])) -%}
+                {{- 'mautic.plugin.ecommerce.tab.validation'|trans -}}
+                {%- if (hasSupportedFeatures and formContainsErrors(form.supportedFeatures)) or (hasFeatureSettings and formContainsErrors(form.featureSettings, ['leadFields', 'enable_page_hit_tracking', 'attribute_last_email', 'default_currency'])) -%}
                     <i class="ri-fw ri-alert-fill text-danger"></i>
                 {%- endif -%}
             </a>
         </li>
     {%- endif -%}
 
+    <li class="{% if 'formatting-container' == activeTab %}active{% endif %}" id="formatting-tab">
+        <a href="#formatting-container" role="tab" data-toggle="tab">
+            {{- 'mautic.plugin.ecommerce.tab.formatting'|trans -}}
+            {%- if hasFormattingErrors -%}
+                <i class="ri-fw ri-alert-fill text-danger"></i>
+            {%- endif -%}
+        </a>
+    </li>
+
+    <li class="{% if 'webhook-container' == activeTab %}active{% endif %}" id="webhook-tab">
+        <a href="#webhook-container" role="tab" data-toggle="tab">
+            {{- 'mautic.plugin.ecommerce.tab.webhook'|trans -}}
+            {%- if hasWebhookErrors -%}
+                <i class="ri-fw ri-alert-fill text-danger"></i>
+            {%- endif -%}
+        </a>
+    </li>
+
     <li class="{% if 'installation-container' == activeTab %}active{% endif %}" id="installation-tab">
         <a href="#installation-container" role="tab" data-toggle="tab">{{ 'mautic.plugin.ecommerce.tab.installation'|trans }}</a>
+    </li>
+
+    <li class="{% if 'support-container' == activeTab %}active{% endif %}" id="support-tab">
+        <a href="#support-container" role="tab" data-toggle="tab">{{ 'mautic.plugin.ecommerce.tab.support'|trans }}</a>
     </li>
 
     {%- if hasFields -%}
@@ -81,45 +114,29 @@
 {{- form_start(form) -}}
 <div class="tab-content pa-md">
     <div class="tab-pane fade {% if 'details-container' == activeTab %}in active{% endif %} bdr-w-0" id="details-container">
+        {{ include('@EcommerceConnector/Integration/_notice_styles.html.twig') }}
+
+        {% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'warning' } %}
+            {% block content %}
+                <p class="mb-0">{{ 'mautic.plugin.ecommerce.gdpr_warning'|trans|purify }}</p>
+            {% endblock %}
+        {% endembed %}
+
         {{- form_row(form.isPublished) -}}
         {%- if form.virtual is defined %}{{ form_row(form.virtual) }}{% endif %}
-        {%- if form.apiKeys is defined -%}
-            {{- form_row(form.apiKeys) -}}
-            {%- if formNotes.authorization is defined -%}
-                <div class="alert alert-{{ formNotes.authorization.type }}">
-                    {{- formNotes.authorization.note|purify -}}
-                </div>
+
+        {%- if form.featureSettings is defined -%}
+            {%- if form.featureSettings.enable_page_hit_tracking is defined -%}
+                {{- form_row(form.featureSettings.enable_page_hit_tracking) -}}
             {%- endif -%}
-
-            <div class="row">
-                {%- if form.apiKeys|length > 0 and callbackUrl is not empty -%}
-                    <div class="well well-sm">
-                        {{- 'mautic.integration.callbackuri'|trans }}<br/>
-                        {{ include('@MauticCore/Components/code-snippet.html.twig', {
-                            variant: 'single',
-                            innerText: callbackUrl,
-                            className: 'layer-two mt-sm'
-                        }) }}
-                    </div>
-                {%- endif -%}
-            </div>
-
-            {%- if form.authButton is defined -%}
-                <div class="row">
-                    <div class="col-xs-12 text-center">
-                        {{- form_widget(form.authButton, {'attr': {'class': 'btn btn-success btn-lg'}}) -}}
-                    </div>
-                </div>
+            {%- if form.featureSettings.attribute_last_email is defined -%}
+                {{- form_row(form.featureSettings.attribute_last_email) -}}
             {%- endif -%}
         {%- endif -%}
 
-        {%- if formNotes.custom is defined -%}
-            {%- if formNotes.custom is string -%}
-                {{ formNotes.custom|purify }}
-            {%- elseif formNotes.custom.custom is defined and formNotes.custom.template is string -%}
-                {{ include(formNotes.custom.template, formNotes.custom.parameters|default([]), ignore_missing=true) }}
-            {%- endif -%}
-        {%- endif -%}
+        <div class="mt-md">
+            {{ include('@EcommerceConnector/Integration/cta.html.twig') }}
+        </div>
     </div>
 
     {%- if hasSupportedFeatures or hasFeatureSettings -%}
@@ -131,17 +148,43 @@
                 }) -}}
             {%- endif -%}
 
-            {%- if hasFeatureSettings -%}
-                {{ form_row(form.featureSettings, {
-                        'formSettings': formSettings,
-                        'formNotes': formNotes,
-                }) -}}
+            {%- if hasFeatureSettings and form.featureSettings is defined -%}
+                {%- if form.featureSettings.allowed_order_sources is defined -%}
+                    {{- form_row(form.featureSettings.allowed_order_sources) -}}
+                {%- endif -%}
+                {%- if form.featureSettings.max_order_total is defined -%}
+                    {{- form_row(form.featureSettings.max_order_total) -}}
+                {%- endif -%}
             {%- endif -%}
         </div>
     {%- endif -%}
 
+    <div class="tab-pane fade {% if 'formatting-container' == activeTab %}in active{% endif %} bdr-w-0" id="formatting-container">
+        {%- if form.featureSettings is defined and form.featureSettings.default_currency is defined -%}
+            {{- form_row(form.featureSettings.default_currency) -}}
+        {%- endif -%}
+    </div>
+
+    <div class="tab-pane fade {% if 'webhook-container' == activeTab %}in active{% endif %} bdr-w-0" id="webhook-container">
+        {%- if form.apiKeys is defined -%}
+            {{- form_row(form.apiKeys) -}}
+        {%- endif -%}
+
+        {%- if formNotes.custom is defined -%}
+            {%- if formNotes.custom is string -%}
+                {{ formNotes.custom|purify }}
+            {%- elseif formNotes.custom.custom is defined and formNotes.custom.template is string -%}
+                {{ include(formNotes.custom.template, formNotes.custom.parameters|default([]), ignore_missing=true) }}
+            {%- endif -%}
+        {%- endif -%}
+    </div>
+
     <div class="tab-pane fade {% if 'installation-container' == activeTab %}in active{% endif %} bdr-w-0" id="installation-container">
         {{ include('@EcommerceConnector/Integration/installation.html.twig', { webhookUrl: webhookUrl }) }}
+    </div>
+
+    <div class="tab-pane fade {% if 'support-container' == activeTab %}in active{% endif %} bdr-w-0" id="support-container">
+        {{ include('@EcommerceConnector/Integration/support.html.twig') }}
     </div>
 
     {%- if hasFields -%}

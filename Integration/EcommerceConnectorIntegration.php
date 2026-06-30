@@ -61,7 +61,9 @@ class EcommerceConnectorIntegration extends AbstractIntegration
             YesNoButtonGroupType::class,
             [
                 'label' => 'mautic.plugin.ecommerce.enable_page_hit_tracking',
-                'data'  => !isset($data['enable_page_hit_tracking']) || (bool) $data['enable_page_hit_tracking'],
+                'data'  => array_key_exists('enable_page_hit_tracking', $data)
+                    ? (bool) $data['enable_page_hit_tracking']
+                    : Config::DEFAULT_ENABLE_PAGE_HIT_TRACKING,
                 'attr'  => [
                     'tooltip' => 'mautic.plugin.ecommerce.enable_page_hit_tracking.tooltip',
                 ],
@@ -155,6 +157,10 @@ class EcommerceConnectorIntegration extends AbstractIntegration
 
         if (empty($config['integration']) || $config['integration'] === $this->getName()) {
             $featureSettings = array_merge($featureSettings, $config['config'] ?? []);
+        }
+
+        if (!array_key_exists('enable_page_hit_tracking', $featureSettings)) {
+            $featureSettings['enable_page_hit_tracking'] = Config::DEFAULT_ENABLE_PAGE_HIT_TRACKING;
         }
 
         return $featureSettings;

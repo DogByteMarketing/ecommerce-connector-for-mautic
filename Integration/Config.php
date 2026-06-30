@@ -8,9 +8,10 @@ use Mautic\PluginBundle\Helper\IntegrationHelper;
 
 class Config
 {
-    public const DEFAULT_CURRENCY     = 'USD';
-    public const DEFAULT_MAX_TOTAL    = 1000000.0;
-    public const DEFAULT_ORDER_SOURCE = 'web';
+    public const DEFAULT_CURRENCY              = 'USD';
+    public const DEFAULT_MAX_TOTAL             = 1000000.0;
+    public const DEFAULT_ORDER_SOURCE          = 'web';
+    public const DEFAULT_ENABLE_PAGE_HIT_TRACKING = true;
 
     public function __construct(
         private IntegrationHelper $integrationHelper,
@@ -39,7 +40,7 @@ class Config
 
     public function isPageHitTrackingEnabled(): bool
     {
-        return $this->getFeatureSetting('enable_page_hit_tracking', true);
+        return $this->getFeatureSetting('enable_page_hit_tracking', self::DEFAULT_ENABLE_PAGE_HIT_TRACKING);
     }
 
     public function isAttributeLastEmailEnabled(): bool

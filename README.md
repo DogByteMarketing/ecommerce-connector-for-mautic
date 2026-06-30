@@ -2,6 +2,26 @@
 
 Track eCommerce orders from your store and attribute revenue to Mautic emails.
 
+## Screenshots
+
+### Email revenue
+
+Revenue attributed to each email appears on the email list and detail views.
+
+![Email revenue badges on the Mautic email list](https://dogbytemarketing.com/mautic/email-revenue.jpg)
+
+### Contact profile
+
+The contact profile includes eCommerce stats and an eCommerce tab with order history, including attributed email names.
+
+![Contact profile commerce stats and eCommerce order tab](https://dogbytemarketing.com/mautic/user-profile.jpg)
+
+### Segment filters
+
+Segment contacts by ecommerce activity and commerce field values (order count, lifetime value, last order date, and more).
+
+![Ecommerce segment filters in the segment builder](https://dogbytemarketing.com/mautic/segment-filters.jpg)
+
 ## Requirements
 
 - Mautic 7.0+
@@ -141,6 +161,8 @@ https://your-mautic-site.com/thank-you?order_id=12345&order_total=99.99&order_so
 - Contact timeline entries for recorded orders
 - Report builder data source: **Ecommerce orders**
 - Duplicate order protection via unique constraint on `order_id` + `order_source`
+- Contact profile commerce fields (lifetime value, order count, last order date, last order total)
+- Segment filters for ecommerce activity and commerce field values
 - Automatic database migrations on plugin update
 
 ## Development
@@ -152,6 +174,16 @@ ddev exec php bin/phpunit -c app/phpunit.xml.dist plugins/EcommerceConnectorBund
 ```
 
 ## Changelog
+
+### 1.2.0
+
+```
+- Added: Contact profile eCommerce fields (lifetime value, order count, last order date, last order total)
+- Added: Automatic eCommerce field updates when orders are recorded
+- Added: Contact profile eCommerce tab with commerce stats and order history
+- Added: Segment filters for ecommerce orders (has order, order total, order date, order source)
+- Updated: Settings organization into General, Validation, Formatting, Webhook, Installation, and Support tabs
+```
 
 ### 1.1.1
 ```

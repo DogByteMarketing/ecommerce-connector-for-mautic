@@ -22,6 +22,7 @@ class EcommerceOrderTracker
         private EcommerceOrderRepository $orderRepository,
         private Config $config,
         private LoggerInterface $logger,
+        private LeadCommerceFieldUpdater $leadCommerceFieldUpdater,
     ) {
     }
 
@@ -64,6 +65,10 @@ class EcommerceOrderTracker
             );
 
             return null;
+        }
+
+        if (null !== $lead) {
+            $this->leadCommerceFieldUpdater->syncForLead($lead);
         }
 
         return $order;

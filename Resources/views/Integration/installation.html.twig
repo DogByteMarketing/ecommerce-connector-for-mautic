@@ -1,29 +1,51 @@
 {{ include('@EcommerceConnector/Integration/_notice_styles.html.twig') }}
-
-{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'success' } %}
-    {% block content %}
-        <p>
-            {{ 'mautic.plugin.ecommerce.install.wordpress_intro'|trans({
-                '%link%': '<a href="https://wordpress.org/plugins/sync-mautic/" target="_blank" rel="noopener noreferrer">Sync Mautic</a>',
-            })|raw }}
-        </p>
-        <p>{{ 'mautic.plugin.ecommerce.install.wordpress_details'|trans|purify }}</p>
-    {% endblock %}
-{% endembed %}
-
-<h4 class="mt-md mb-sm">{{ 'mautic.plugin.ecommerce.install.custom_heading'|trans }}</h4>
-<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.custom_intro'|trans|purify }}</p>
+{% import '@EcommerceConnector/Integration/_contact_macros.html.twig' as contact %}
+{% set supportPhoneLink = contact.phoneLink() %}
 
 {% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'success' } %}
     {% block content %}
         <p>{{ 'mautic.plugin.ecommerce.install.cta_intro'|trans }}</p>
-        <p>
+        <p class="mb-0">
             {{ 'mautic.plugin.ecommerce.install.cta_phone'|trans({
-                '%phone%': '<a href="tel:+14237248922">423 724 8922</a>',
+                '%phone%': supportPhoneLink,
             })|raw }}
         </p>
     {% endblock %}
 {% endembed %}
+
+<h2 class="mt-md mb-sm">{{ 'mautic.plugin.ecommerce.install.script_wordpress_heading'|trans }}</h2>
+<p class="mb-sm">
+    {{ 'mautic.plugin.ecommerce.install.script_wordpress_intro'|trans({
+        '%link%': '<a href="https://wordpress.org/plugins/sync-mautic/" target="_blank" rel="noopener noreferrer">Sync Mautic</a>',
+    })|raw }}
+</p>
+<p class="mb-md">{{ 'mautic.plugin.ecommerce.install.script_wordpress_details'|trans|purify }}</p>
+
+<h2 class="mb-sm">{{ 'mautic.plugin.ecommerce.install.script_heading'|trans }}</h2>
+<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.script_intro'|trans|purify }}</p>
+<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.script_mtcjs_note'|trans|purify }}</p>
+
+<h5 class="fw-sb mb-xs">{{ 'mautic.plugin.ecommerce.install.script_custom_title'|trans }}</h5>
+<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.script_custom_body'|trans|purify }}</p>
+{% set customTrackingScript %}
+<script>
+  mt('send', 'pageview', {
+    order_id: '12345',
+    order_total: '99.99',
+    order_source: 'web',
+    order_currency: 'USD'
+  });
+</script>
+{% endset %}
+{{ include('@MauticCore/Components/code-snippet.html.twig', {
+    variant: 'multi',
+    innerText: customTrackingScript|e('html'),
+    copyText: customTrackingScript,
+}) }}
+<p class="text-muted small mb-0">{{ 'mautic.plugin.ecommerce.install.script_example_note'|trans|purify }}</p>
+
+<h2 class="mt-lg mb-sm">{{ 'mautic.plugin.ecommerce.install.webhook_heading'|trans }}</h2>
+<p class="mb-sm">{{ 'mautic.plugin.ecommerce.install.webhook_intro'|trans|purify }}</p>
 
 <ol class="ecommerce-install-steps pl-md mb-md mt-md">
     <li>
@@ -89,6 +111,6 @@ $signature = hash_hmac(\'sha256\', $payload, \'YOUR_WEBHOOK_SECRET\');',
 
 {% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'warning' } %}
     {% block content %}
-        <p class="mb-0">{{ 'mautic.plugin.ecommerce.install.security_note'|trans|purify }}</p>
+        <p class="mb-0">{{ 'mautic.plugin.ecommerce.install.webhook_security_note'|trans|purify }}</p>
     {% endblock %}
 {% endembed %}

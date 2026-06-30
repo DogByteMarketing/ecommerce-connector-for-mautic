@@ -9,9 +9,3 @@
         <p>{{ 'mautic.plugin.ecommerce.webhook_instructions'|trans }}</p>
     {% endblock %}
 {% endembed %}
-
-{% embed '@EcommerceConnector/Integration/notice.html.twig' with { variant: 'warning' } %}
-    {% block content %}
-        <p>{{ 'mautic.plugin.ecommerce.gdpr_warning'|trans|purify }}</p>
-    {% endblock %}
-{% endembed %}

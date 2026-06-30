@@ -69,7 +69,7 @@ class EcommerceOrderRepository extends CommonRepository
             'eo.order_source',
             'eo.date_added',
             'e.id AS email_id',
-            'e.subject AS email_subject'
+            'e.name AS email_name'
         )
             ->from(MAUTIC_TABLE_PREFIX.'ecommerce_orders', 'eo')
             ->leftJoin('eo', MAUTIC_TABLE_PREFIX.'emails', 'e', 'e.id = eo.email_id')
@@ -97,5 +97,59 @@ class EcommerceOrderRepository extends CommonRepository
             'results' => $results,
             'total'   => (int) $countQuery->executeQuery()->fetchOne(),
         ];
+    }
+
+    /**
+     * @return array{order_count: int, lifetime_value: string, last_order_date: ?string, last_order_total: string}
+     */
+    public function getCommerceStatsForLead(int $leadId): array
+    {
+        $query = $this->getEntityManager()->getConnection()->createQueryBuilder();
+
+        $query->select('COUNT(eo.id) AS order_count')
+            ->addSelect('COALESCE(SUM(eo.order_total), 0) AS lifetime_value')
+            ->from(MAUTIC_TABLE_PREFIX.'ecommerce_orders', 'eo')
+            ->where('eo.lead_id = :leadId')
+            ->setParameter('leadId', $leadId);
+
+        $row = $query->executeQuery()->fetchAssociative();
+
+        $lastOrderQuery = $this->getEntityManager()->getConnection()->createQueryBuilder();
+        $lastOrderQuery->select('eo.order_total', 'eo.date_added')
+            ->from(MAUTIC_TABLE_PREFIX.'ecommerce_orders', 'eo')
+            ->where('eo.lead_id = :leadId')
+            ->orderBy('eo.date_added', 'DESC')
+            ->addOrderBy('eo.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('leadId', $leadId);
+
+        $lastOrder = $lastOrderQuery->executeQuery()->fetchAssociative();
+
+        return [
+            'order_count'       => (int) ($row['order_count'] ?? 0),
+            'lifetime_value'    => number_format((float) ($row['lifetime_value'] ?? 0), 2, '.', ''),
+            'last_order_date'   => is_array($lastOrder) && isset($lastOrder['date_added'])
+                ? (string) $lastOrder['date_added']
+                : null,
+            'last_order_total'  => is_array($lastOrder) && isset($lastOrder['order_total'])
+                ? number_format((float) $lastOrder['order_total'], 2, '.', '')
+                : '0.00',
+        ];
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getLeadIdsWithOrders(): array
+    {
+        $query = $this->getEntityManager()->getConnection()->createQueryBuilder();
+
+        $query->select('DISTINCT eo.lead_id')
+            ->from(MAUTIC_TABLE_PREFIX.'ecommerce_orders', 'eo')
+            ->where('eo.lead_id IS NOT NULL');
+
+        $results = $query->executeQuery()->fetchFirstColumn();
+
+        return array_map('intval', $results);
     }
 }

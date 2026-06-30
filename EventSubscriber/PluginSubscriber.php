@@ -10,12 +10,18 @@ use Mautic\PluginBundle\Bundle\PluginDatabase;
 use Mautic\PluginBundle\Event\PluginInstallEvent;
 use Mautic\PluginBundle\Event\PluginUpdateEvent;
 use Mautic\PluginBundle\PluginEvents;
+use MauticPlugin\EcommerceConnectorBundle\Service\LeadCommerceFieldInstaller;
+use MauticPlugin\EcommerceConnectorBundle\Service\LeadCommerceFieldUpdater;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class PluginSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private EntityManagerInterface $entityManager, private PluginDatabase $pluginDatabase)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private PluginDatabase $pluginDatabase,
+        private LeadCommerceFieldInstaller $leadCommerceFieldInstaller,
+        private LeadCommerceFieldUpdater $leadCommerceFieldUpdater,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -49,6 +55,9 @@ class PluginSubscriber implements EventSubscriberInterface
                 $event->getInstalledSchema()
             );
         }
+
+        $this->leadCommerceFieldInstaller->installFields();
+        $this->leadCommerceFieldUpdater->backfillAllContacts();
     }
 
     public function onUpdate(PluginUpdateEvent $event): void
@@ -58,6 +67,9 @@ class PluginSubscriber implements EventSubscriberInterface
         if (count($metadata) > 0) {
             $this->pluginDatabase->installPluginSchema($metadata);
         }
+
+        $this->leadCommerceFieldInstaller->installFields();
+        $this->leadCommerceFieldUpdater->backfillAllContacts();
     }
 
     /**
