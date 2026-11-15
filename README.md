@@ -8,19 +8,19 @@ Track eCommerce orders from your store and attribute revenue to Mautic emails.
 
 Revenue attributed to each email appears on the email list and detail views.
 
-![Email revenue badges on the Mautic email list](https://dogbytemarketing.com/mautic/email-revenue.jpg)
+![Email revenue badges on the Mautic email list](https://backend.dogbytemarketing.com/mautic/email-revenue.jpg)
 
 ### Contact profile
 
 The contact profile includes eCommerce stats and an eCommerce tab with order history, including attributed email names.
 
-![Contact profile commerce stats and eCommerce order tab](https://dogbytemarketing.com/mautic/user-profile.jpg)
+![Contact profile commerce stats and eCommerce order tab](https://backend.dogbytemarketing.com/mautic/user-profile.jpg)
 
 ### Segment filters
 
 Segment contacts by ecommerce activity and commerce field values (order count, lifetime value, last order date, and more).
 
-![Ecommerce segment filters in the segment builder](https://dogbytemarketing.com/mautic/segment-filters.jpg)
+![Ecommerce segment filters in the segment builder](https://backend.dogbytemarketing.com/mautic/segment-filters.jpg)
 
 ## Requirements
 
