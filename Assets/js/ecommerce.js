@@ -1,49 +1,43 @@
 Mautic.ecommerceBindTimelineOrderLinks = function (container) {
     var scope = container || 'body';
 
-    mQuery(scope).find('.js-ecommerce-order-timeline').each(function () {
-        var $marker = mQuery(this);
-        var href = $marker.attr('data-order-url');
-        var header = $marker.attr('data-order-header');
-        var title = $marker.attr('data-order-title');
-        var $detailsRow = $marker.closest('tr.timeline-details');
+    mQuery(scope).find('a.js-ecommerce-order-timeline').each(function () {
+        var $link = mQuery(this);
+        var $detailsRow = $link.closest('tr.timeline-details');
         var $mainRow = $detailsRow.prevAll('tr.timeline-row').not('.timeline-date-header').first();
 
-        if (!$mainRow.length || !href) {
-            $marker.remove();
+        if (!$mainRow.length || !$link.attr('href')) {
             return;
         }
 
         $mainRow.find('.table-expand-button').addClass('hide');
         $mainRow.css('cursor', 'pointer');
+        var title = $link.attr('data-order-title');
         if (title) {
             $mainRow.attr('title', title);
         }
 
         $mainRow.off('click.ecommerceOrder').on('click.ecommerceOrder', function (event) {
-            if (mQuery(event.target).closest('.table-expand').length) {
+            if (mQuery(event.target).closest('a, button, .table-expand').length) {
                 return;
             }
 
             event.preventDefault();
+            event.stopPropagation();
 
-            var $dialog = mQuery('#MauticSharedModal .modal-dialog');
-            $dialog.addClass('modal-lg');
-            mQuery('#MauticSharedModal').one('hidden.bs.modal.ecommerceOrderSize', function () {
-                $dialog.removeClass('modal-lg');
-            });
-
-            var el = mQuery('<a/>', {
-                href: href,
-                'data-toggle': 'ajaxmodal',
-                'data-target': '#MauticSharedModal',
-                'data-header': header
-            }).get(0);
-
-            Mautic.ajaxifyModal(el, event);
+            // Open after this click finishes. Opening the shared modal during the
+            // click lets Bootstrap treat that same click as a backdrop dismiss, which
+            // aborts the request and leaves the modal empty on Mautic 7.1.
+            window.setTimeout(function () {
+                var $modal = mQuery('#MauticSharedModal');
+                var $dialog = $modal.find('.modal-dialog');
+                $dialog.addClass('modal-lg');
+                $modal.one('hidden.bs.modal.ecommerceOrderSize', function () {
+                    $dialog.removeClass('modal-lg');
+                });
+                $link.trigger('click');
+            }, 0);
         });
-
-        $marker.remove();
     });
 };
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MauticPlugin\EcommerceConnectorBundle\Twig;
 
+use Mautic\CoreBundle\Twig\Helper\DateHelper;
 use MauticPlugin\EcommerceConnectorBundle\Integration\Config;
 use MauticPlugin\EcommerceConnectorBundle\Service\CurrencyFormatter;
 use MauticPlugin\EcommerceConnectorBundle\Service\PrivacyUpgradeNotice;
@@ -17,6 +18,7 @@ final class EcommerceExtension extends AbstractExtension
         private Config $config,
         private CurrencyFormatter $currencyFormatter,
         private PrivacyUpgradeNotice $privacyUpgradeNotice,
+        private DateHelper $dateHelper,
     ) {
     }
 
@@ -31,7 +33,25 @@ final class EcommerceExtension extends AbstractExtension
     {
         return [
             new TwigFunction('ecommerce_privacy_upgrade_notice_pending', [$this, 'isPrivacyUpgradeNoticePending']),
+            new TwigFunction('ecommerce_date_group_label', [$this, 'dateGroupLabel']),
         ];
+    }
+
+    /**
+     * dateToTextShort exists from Mautic 7.2. Earlier 7.x releases only have dateToShort.
+     */
+    public function dateGroupLabel(mixed $datetime, string $timezone = 'local', string $fromFormat = 'Y-m-d H:i:s'): string
+    {
+        if ('toTextShort' === self::dateGroupMethod($this->dateHelper)) {
+            return $this->dateHelper->toTextShort($datetime, $timezone, $fromFormat);
+        }
+
+        return $this->dateHelper->toShort($datetime, $timezone, $fromFormat);
+    }
+
+    public static function dateGroupMethod(object $dateHelper): string
+    {
+        return method_exists($dateHelper, 'toTextShort') ? 'toTextShort' : 'toShort';
     }
 
     public function isPrivacyUpgradeNoticePending(): bool

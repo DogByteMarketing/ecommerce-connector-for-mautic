@@ -304,6 +304,11 @@ You are solely responsible for how you deploy and use this plugin, including com
 
 ## Changelog
 
+### 1.3.1
+```
+* Bugfix: Contact History order modal opens empty on Mautic 7.1
+```
+
 ### 1.3.0
 ```
 * Added: Line items on tracked orders (item ID, name, qty, category).

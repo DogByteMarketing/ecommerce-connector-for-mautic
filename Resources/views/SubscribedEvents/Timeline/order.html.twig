@@ -1,7 +1,10 @@
 {#
-  Marker used by Assets/js/ecommerce.js to open the order details modal from History.
+  In-document ajax modal link. Assets/js/ecommerce.js opens it from the History row
+  after the click event finishes so Bootstrap does not dismiss the modal immediately.
 #}
-<span class="js-ecommerce-order-timeline hide"
-      data-order-url="{{ event.extra.modalUrl|e('html_attr') }}"
-      data-order-header="{{ event.extra.modalHeader|e('html_attr') }}"
-      data-order-title="{{ 'mautic.plugin.ecommerce.tab.view_order'|trans|e('html_attr') }}"></span>
+<a class="js-ecommerce-order-timeline hide"
+   href="{{ event.extra.modalUrl }}"
+   data-toggle="ajaxmodal"
+   data-target="#MauticSharedModal"
+   data-header="{{ event.extra.modalHeader }}"
+   data-order-title="{{ 'mautic.plugin.ecommerce.tab.view_order'|trans }}"></a>
